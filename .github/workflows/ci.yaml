@@ -1,42 +1,50 @@
-name: Publish Package
+name: Publish Python 🐍 distribution 📦 to PyPI
 
-env:
-  TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-  TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-
-on:
-  push:
-    branches:
-      - master
+on: push
 
 jobs:
   build:
-    strategy:
-      matrix:
-        rosdistro: [noetic]
+    name: Build distribution 📦
     runs-on: ubuntu-latest
-    container:
-      image: osrf/ros:${{ matrix.rosdistro }}-desktop-full
+
     steps:
-    - uses: actions/checkout@v2
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential clang-format-10 file git python3-catkin-lint python3-pip python3-rosdep
-        pip install setuptools wheel twine
-    - name: Test
-      run: |
-        source /opt/ros/${{ matrix.rosdistro }}/setup.bash
-        cd tests && python -m unittest -v test_rosmsg_dict_converter.py
-      continue-on-error: false
-    - name: Check environment variables
-      run: |
-        echo "TWINE_USERNAME is set: ${{ env.TWINE_USERNAME != '' }}"
-        echo "TWINE_PASSWORD is set: ${{ env.TWINE_PASSWORD != '' }}"
-    - name: Build and upload package
-      run: |
-        python setup.py sdist bdist_wheel
-        twine upload dist/*
-      env:
-        TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+    - name: Install pypa/build
+      run: >-
+        python3 -m
+        pip install
+        build
+        --user
+    - name: Build a binary wheel and a source tarball
+      run: python3 -m build
+    - name: Store the distribution packages
+      uses: actions/upload-artifact@v3
+      with:
+        name: python-package-distributions
+        path: dist/
+
+  publish-to-pypi:
+    name: >-
+      Publish Python 🐍 distribution 📦 to PyPI
+    # if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
+    needs:
+    - build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/rosmsg_dict_converter  # Replace <package-name> with your PyPI project name
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+
+    steps:
+    - name: Download all the dists
+      uses: actions/download-artifact@v3
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Publish distribution 📦 to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
