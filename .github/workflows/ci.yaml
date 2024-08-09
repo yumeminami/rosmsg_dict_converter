@@ -16,7 +16,7 @@ jobs:
         rosdistro: [noetic]
     runs-on: ubuntu-latest
     container:
-      image: ros:${{ matrix.rosdistro }}-ros-core
+      image: osrf/ros:${{rosdistro}}-desktop-full
     steps:
     - uses: actions/checkout@v2
     - name: Install dependencies
@@ -26,6 +26,7 @@ jobs:
         pip install setuptools wheel twine
     - name: Test
       run: |
+        source /opt/ros/${{rosdistro}}/setup.bash
         cd tests && python -m unittest -v test_rosmsg_dict_converter.py
       continue-on-error: false
     - name: Check environment variables
