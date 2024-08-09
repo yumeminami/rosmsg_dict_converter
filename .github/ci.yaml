@@ -17,10 +17,6 @@ jobs:
     - name: Install dependencies
       run: |
         pip install setuptools wheel twine
-    - name: Build and upload package
+    - name: Test
       run: |
-        python setup.py sdist bdist_wheel
-        twine upload dist/*
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        cd tests && python -m unittest -v test_rosmsg_dict_converter.py
