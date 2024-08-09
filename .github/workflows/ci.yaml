@@ -1,5 +1,9 @@
 name: Publish Package
 
+env:
+  TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+  TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+
 on:
   push:
     branches:
@@ -17,10 +21,18 @@ jobs:
     - name: Install dependencies
       run: |
         pip install setuptools wheel twine
+    - name: Test
+      run: |
+        cd tests && python -m unittest -v test_rosmsg_dict_converter.py
+      continue-on-error: false
+    - name: Check environment variables
+      run: |
+        echo "TWINE_USERNAME is set: ${{ env.TWINE_USERNAME != '' }}"
+        echo "TWINE_PASSWORD is set: ${{ env.TWINE_PASSWORD != '' }}"
     - name: Build and upload package
       run: |
         python setup.py sdist bdist_wheel
         twine upload dist/*
       env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
