@@ -2,12 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name="rosmsg_dict_converter",
-    version="0.1.1",
+    version="0.1.2",
     packages=find_packages(),
     install_requires=[
         # List your package dependencies here
-        "rich"
-        "pydantic"
+        "rich",
+        "pydantic",
     ],
     author="Wing mun Fung",
     author_email="fengrongman@gmail.com",
