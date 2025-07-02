@@ -7,6 +7,7 @@ setup(
     install_requires=[
         # List your package dependencies here
         "rich"
+        "pydantic"
     ],
     author="Wing mun Fung",
     author_email="fengrongman@gmail.com",
